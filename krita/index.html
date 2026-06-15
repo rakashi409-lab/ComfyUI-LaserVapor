@@ -3,227 +3,204 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>COMFYUI · LASERVAPOR — Krita Plugin</title>
+<title>农用激光除杂车 · Laser Vapor — Krita 插件</title>
 <link rel="icon" type="image/svg+xml" href="favicon.svg" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
   :root{
-    --ink:#0a0a0a;
-    --paper:#f2f0eb;
-    --orange:#ff3c00;
-    --teal:#2e8b9e;
-    --line:#0a0a0a;
-    --grid:rgba(10,10,10,.07);
+    --bg:#06121b;          /* deep tech navy */
+    --bg2:#0b1e2c;
+    --panel:#0e2433;
+    --ink:#eaf6f7;
+    --mut:#7fa8b5;
+    --teal:#38aaab;
+    --teal-lt:#3fbdb0;
+    --blue:#2f7aaf;
+    --line:rgba(63,189,176,.22);
+    --grid:rgba(63,189,176,.06);
   }
   *{box-sizing:border-box;margin:0;padding:0}
   html{scroll-behavior:smooth}
   body{
-    background:var(--paper);
+    background:var(--bg);
     color:var(--ink);
     font-family:'Space Grotesk',-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;
-    overflow-x:hidden;
-    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;-webkit-font-smoothing:antialiased;
   }
-  ::selection{background:var(--orange);color:#fff}
+  ::selection{background:var(--teal);color:#04121a}
 
-  /* ---- background blueprint grid ---- */
-  .grid-bg{
-    position:fixed;inset:0;z-index:0;pointer-events:none;
-    background-image:
-      linear-gradient(var(--grid) 1px,transparent 1px),
+  /* layered backgrounds */
+  .grid-bg{position:fixed;inset:0;z-index:0;pointer-events:none;
+    background-image:linear-gradient(var(--grid) 1px,transparent 1px),
       linear-gradient(90deg,var(--grid) 1px,transparent 1px);
-    background-size:48px 48px;
-  }
-  .noise{
-    position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.04;
-    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  }
+    background-size:54px 54px;
+    mask-image:radial-gradient(140% 90% at 50% 0%,#000 35%,transparent 100%);}
+  .glow{position:fixed;z-index:0;pointer-events:none;border-radius:50%;filter:blur(120px);opacity:.5}
+  .glow.a{width:560px;height:560px;background:radial-gradient(circle,var(--teal),transparent 65%);top:-180px;left:-120px}
+  .glow.b{width:620px;height:620px;background:radial-gradient(circle,var(--blue),transparent 65%);top:140px;right:-220px;opacity:.4}
+  .scanline{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.04;
+    background:repeating-linear-gradient(0deg,#fff 0 1px,transparent 1px 4px)}
   .wrap{position:relative;z-index:2;max-width:1180px;margin:0 auto;padding:0 28px}
 
-  /* ---- top bar ---- */
-  .topbar{
-    position:relative;z-index:3;display:flex;justify-content:space-between;align-items:center;
-    border-bottom:2px solid var(--ink);padding:14px 28px;
-    font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:500;
-    text-transform:uppercase;letter-spacing:1px;
-    background:var(--paper);
-  }
-  .topbar .dot{width:9px;height:9px;background:var(--orange);border-radius:50%;display:inline-block;margin-right:8px;animation:blink 1.4s steps(2) infinite}
-  @keyframes blink{50%{opacity:.2}}
-  .topbar nav{display:flex;gap:26px}
-  .topbar nav a{color:var(--ink);text-decoration:none;position:relative}
-  .topbar nav a:hover{color:var(--orange)}
+  /* top bar */
+  .topbar{position:sticky;top:0;z-index:30;display:flex;justify-content:space-between;align-items:center;
+    padding:12px 28px;border-bottom:1px solid var(--line);
+    background:rgba(6,18,27,.78);backdrop-filter:blur(14px);
+    font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:1px;text-transform:uppercase}
+  .topbar .brand{display:flex;align-items:center;gap:10px;font-weight:700}
+  .topbar .brand img{width:26px;height:26px}
+  .topbar .brand .zh{font-family:'Space Grotesk',"Microsoft YaHei";letter-spacing:0}
+  .topbar nav{display:flex;gap:24px}
+  .topbar nav a{color:var(--mut);text-decoration:none;transition:color .2s}
+  .topbar nav a:hover{color:var(--teal-lt)}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--teal-lt);display:inline-block;
+    box-shadow:0 0 10px var(--teal-lt);animation:blink 1.6s steps(2) infinite}
+  @keyframes blink{50%{opacity:.25}}
 
-  /* ---- hero ---- */
-  .hero{position:relative;padding:60px 0 40px;border-bottom:2px solid var(--ink)}
-  .hero .meta-row{
-    display:flex;justify-content:space-between;font-family:'JetBrains Mono',monospace;
-    font-size:11px;letter-spacing:1px;text-transform:uppercase;color:#555;margin-bottom:18px;
-  }
-  .hero h1{
-    font-family:'Archivo Black',sans-serif;
-    font-size:clamp(56px,13vw,168px);
-    line-height:.84;letter-spacing:-.03em;text-transform:uppercase;
-    position:relative;
-  }
-  .hero h1 .line2{display:block;color:transparent;-webkit-text-stroke:2px var(--ink)}
-  .hero h1 .fx{color:var(--orange)}
-  .hero .sweep{
-    background:linear-gradient(90deg,var(--ink) 0 50%,var(--orange) 50% 100%);
-    background-size:200% 100%;
-    -webkit-background-clip:text;background-clip:text;color:transparent;
-    animation:sweep 6s linear infinite;
-  }
-  @keyframes sweep{to{background-position:-200% 0}}
+  /* hero */
+  .hero{position:relative;padding:74px 0 56px}
+  .hero .kick{font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:3px;
+    text-transform:uppercase;color:var(--teal-lt);margin-bottom:20px;display:flex;align-items:center;gap:10px}
+  .hero .kick::before{content:"";width:46px;height:1px;background:var(--teal-lt)}
+  .hero-grid{display:grid;grid-template-columns:1fr 340px;gap:48px;align-items:center}
+  .h-zh{font-family:'Space Grotesk',"Microsoft YaHei";font-weight:700;
+    font-size:clamp(40px,8vw,86px);line-height:1.02;letter-spacing:-.01em}
+  .h-en{font-family:'Archivo Black',sans-serif;font-size:clamp(46px,11vw,140px);
+    line-height:.86;letter-spacing:-.03em;text-transform:uppercase;margin-top:6px;
+    background:linear-gradient(100deg,var(--teal-lt),var(--blue) 70%,var(--teal-lt));
+    background-size:220% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;
+    animation:sweep 7s linear infinite}
+  @keyframes sweep{to{background-position:-220% 0}}
+  .hero-desc{font-size:18px;color:#cfe5e8;max-width:520px;line-height:1.55;margin-top:24px}
+  .hero-desc b{color:#fff;font-weight:700}
+  .tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:24px}
+  .tag{font-family:'JetBrains Mono',monospace;font-size:11px;text-transform:uppercase;letter-spacing:.5px;
+    border:1px solid var(--line);padding:6px 12px;border-radius:99px;color:var(--mut)}
+  .tag.fill{background:linear-gradient(120deg,var(--teal),var(--blue));border-color:transparent;color:#04121a;font-weight:600}
 
-  .hero-grid{display:grid;grid-template-columns:1fr 360px;gap:40px;align-items:end;margin-top:34px}
-  .hero-desc{font-size:19px;font-weight:400;max-width:520px;line-height:1.5}
-  .hero-desc b{font-weight:700}
-  .tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:22px}
-  .tag{font-family:'JetBrains Mono',monospace;font-size:11px;text-transform:uppercase;
-    border:1.5px solid var(--ink);padding:5px 11px;letter-spacing:.5px}
-  .tag.fill{background:var(--ink);color:var(--paper)}
-
-  /* rotating logo */
-  .logo-stage{display:flex;justify-content:center;align-items:center;position:relative}
-  .logo-ring{
-    width:300px;height:300px;border:2px solid var(--ink);border-radius:50%;
-    display:flex;align-items:center;justify-content:center;position:relative;
-  }
-  .logo-ring::before{
-    content:"";position:absolute;inset:-14px;border:1px dashed var(--ink);border-radius:50%;
-    animation:spin 24s linear infinite;
-  }
-  .logo-ring::after{
-    content:"PLUGIN · v1.0 · KRITA · LIBLIB · COMFYUI · ";
-    position:absolute;inset:0;font-family:'JetBrains Mono',monospace;font-size:9px;
-  }
-  .logo-img{width:180px;height:180px;animation:spin 14s linear infinite}
+  .logo-stage{display:flex;justify-content:center;align-items:center}
+  .logo-ring{width:288px;height:288px;border:1px solid var(--line);border-radius:50%;
+    display:flex;align-items:center;justify-content:center;position:relative}
+  .logo-ring::before{content:"";position:absolute;inset:-16px;border:1px dashed rgba(63,189,176,.3);
+    border-radius:50%;animation:spin 26s linear infinite}
+  .logo-ring::after{content:"";position:absolute;inset:26px;border-radius:50%;
+    background:radial-gradient(circle,rgba(63,189,176,.18),transparent 70%)}
+  .logo-img{width:180px;height:180px;animation:spin 16s linear infinite;
+    filter:drop-shadow(0 8px 26px rgba(47,122,175,.5))}
   @keyframes spin{to{transform:rotate(360deg)}}
 
-  /* ---- big CTA ---- */
-  .cta-band{
-    background:var(--ink);color:var(--paper);border-bottom:2px solid var(--ink);
-    padding:0;overflow:hidden;
-  }
-  .cta-band a{
-    display:flex;align-items:center;justify-content:space-between;gap:30px;
-    text-decoration:none;color:var(--paper);padding:34px 28px;
-    max-width:1180px;margin:0 auto;transition:background .2s;
-  }
-  .cta-band a:hover{background:var(--orange)}
-  .cta-band .big{font-family:'Archivo Black',sans-serif;font-size:clamp(28px,5vw,54px);
-    text-transform:uppercase;letter-spacing:-.02em;line-height:1}
-  .cta-band .arrow{font-size:clamp(30px,6vw,60px);transition:transform .25s}
+  /* CTA band */
+  .cta-band{border-top:1px solid var(--line);border-bottom:1px solid var(--line);
+    background:linear-gradient(120deg,rgba(56,170,171,.1),rgba(47,122,175,.1))}
+  .cta-band a{display:flex;align-items:center;justify-content:space-between;gap:30px;
+    text-decoration:none;color:var(--ink);padding:32px 28px;max-width:1180px;margin:0 auto;
+    transition:background .25s}
+  .cta-band a:hover{background:linear-gradient(120deg,var(--teal),var(--blue));color:#04121a}
+  .cta-band .big{font-family:'Archivo Black',sans-serif;font-size:clamp(26px,4.6vw,50px);
+    text-transform:uppercase;letter-spacing:-.02em}
+  .cta-band .arrow{font-size:clamp(28px,5vw,54px);transition:transform .25s}
   .cta-band a:hover .arrow{transform:translateX(16px)}
-  .cta-band .sz{font-family:'JetBrains Mono',monospace;font-size:12px;opacity:.7;text-align:right}
+  .cta-band .sz{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--mut);text-align:right}
+  .cta-band a:hover .sz{color:#04121a}
 
   /* marquee */
-  .marquee{background:var(--orange);color:#fff;border-bottom:2px solid var(--ink);
-    overflow:hidden;white-space:nowrap;padding:9px 0}
-  .marquee div{display:inline-block;animation:slide 22s linear infinite;
-    font-family:'Archivo Black',sans-serif;font-size:15px;text-transform:uppercase;letter-spacing:1px}
+  .marquee{background:linear-gradient(120deg,var(--teal),var(--blue));color:#04121a;
+    overflow:hidden;white-space:nowrap;padding:10px 0;border-bottom:1px solid var(--line)}
+  .marquee div{display:inline-block;animation:slide 24s linear infinite;
+    font-family:'Archivo Black',sans-serif;font-size:14px;text-transform:uppercase;letter-spacing:1px}
   .marquee span{margin:0 22px}
   @keyframes slide{to{transform:translateX(-50%)}}
 
-  /* ---- sections ---- */
-  section{padding:78px 0;border-bottom:2px solid var(--ink)}
+  section{padding:84px 0;border-bottom:1px solid var(--line)}
   .sec-head{display:flex;align-items:baseline;gap:18px;margin-bottom:46px}
-  .sec-num{font-family:'JetBrains Mono',monospace;font-size:14px;color:var(--orange);font-weight:700}
-  .sec-head h2{font-family:'Archivo Black',sans-serif;font-size:clamp(30px,6vw,64px);
+  .sec-num{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--teal-lt);font-weight:700;letter-spacing:1px}
+  .sec-head h2{font-family:'Archivo Black',sans-serif;font-size:clamp(30px,6vw,62px);
     text-transform:uppercase;letter-spacing:-.02em;line-height:.95}
+  .sec-head .zh{font-size:18px;color:var(--mut);font-family:'Space Grotesk',"Microsoft YaHei";align-self:end;margin-bottom:6px}
 
-  .feat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:0;border:2px solid var(--ink)}
-  .feat-grid .cell{padding:34px 30px;border-right:2px solid var(--ink);border-bottom:2px solid var(--ink);
-    position:relative;transition:background .2s;min-height:200px;display:flex;flex-direction:column}
-  .feat-grid .cell:nth-child(2n){border-right:none}
-  .feat-grid .cell:nth-last-child(-n+2){border-bottom:none}
-  .feat-grid .cell:hover{background:var(--ink);color:var(--paper)}
-  .feat-grid .cell:hover .idx{color:var(--orange)}
-  .feat-grid .idx{font-family:'JetBrains Mono',monospace;font-size:13px;color:#999;margin-bottom:auto}
-  .feat-grid h3{font-size:25px;font-weight:700;margin:18px 0 10px;letter-spacing:-.01em}
-  .feat-grid p{font-size:15px;line-height:1.55;opacity:.85}
+  .feat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
+  .cell{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:30px 28px;
+    position:relative;overflow:hidden;transition:transform .25s,border-color .25s;min-height:190px}
+  .cell::after{content:"";position:absolute;inset:0;background:radial-gradient(400px 180px at 100% 0%,rgba(63,189,176,.12),transparent 60%);opacity:0;transition:opacity .3s}
+  .cell:hover{transform:translateY(-5px);border-color:var(--teal)}
+  .cell:hover::after{opacity:1}
+  .cell .idx{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--teal-lt);letter-spacing:1px}
+  .cell h3{font-size:23px;font-weight:700;margin:14px 0 10px}
+  .cell p{font-size:14.5px;line-height:1.6;color:var(--mut)}
 
-  /* steps */
-  .steps{counter-reset:s}
-  .step{display:grid;grid-template-columns:90px 1fr;gap:26px;padding:26px 0;border-top:2px solid var(--ink);
-    align-items:start}
-  .step:first-child{border-top:none}
-  .step .n{font-family:'Archivo Black',sans-serif;font-size:54px;line-height:.8;color:transparent;
-    -webkit-text-stroke:2px var(--ink)}
-  .step:hover .n{color:var(--orange);-webkit-text-stroke:2px var(--orange)}
-  .step h4{font-size:21px;font-weight:600;margin-bottom:6px}
-  .step p{font-size:15px;opacity:.85;line-height:1.5}
-  code{font-family:'JetBrains Mono',monospace;background:var(--ink);color:var(--paper);
-    padding:2px 8px;font-size:.86em;border-radius:3px}
+  .steps{display:grid;gap:14px}
+  .step{display:grid;grid-template-columns:74px 1fr;gap:22px;align-items:center;
+    background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:20px 24px;transition:border-color .2s}
+  .step:hover{border-color:var(--teal)}
+  .step .n{font-family:'Archivo Black',sans-serif;font-size:40px;line-height:1;
+    background:linear-gradient(120deg,var(--teal-lt),var(--blue));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .step h4{font-size:19px;font-weight:600;margin-bottom:4px}
+  .step p{font-size:14.5px;color:var(--mut);line-height:1.5}
+  code{font-family:'JetBrains Mono',monospace;background:rgba(63,189,176,.12);color:var(--teal-lt);
+    padding:2px 8px;font-size:.85em;border-radius:5px;border:1px solid var(--line)}
 
-  .callout{border:2px solid var(--orange);background:rgba(255,60,0,.07);padding:20px 24px;margin-top:30px;
-    font-size:15px;line-height:1.6}
-  .callout b{color:var(--orange)}
+  .callout{border:1px solid var(--teal);background:rgba(56,170,171,.08);border-radius:14px;
+    padding:20px 24px;margin-top:28px;font-size:14.5px;line-height:1.65;color:#cfe5e8}
+  .callout b{color:var(--teal-lt)}
 
-  /* spec table */
-  .spec{border:2px solid var(--ink);font-family:'JetBrains Mono',monospace}
-  .spec .row{display:grid;grid-template-columns:240px 1fr;border-bottom:1px solid var(--ink);font-size:13px}
+  .spec{border:1px solid var(--line);border-radius:14px;overflow:hidden;font-family:'JetBrains Mono',monospace}
+  .spec .row{display:grid;grid-template-columns:230px 1fr;border-bottom:1px solid var(--line);font-size:13px}
   .spec .row:last-child{border-bottom:none}
-  .spec .k{padding:14px 20px;background:var(--ink);color:var(--paper);text-transform:uppercase;letter-spacing:1px}
-  .spec .v{padding:14px 20px}
+  .spec .k{padding:15px 22px;background:rgba(63,189,176,.08);color:var(--teal-lt);text-transform:uppercase;letter-spacing:1px}
+  .spec .v{padding:15px 22px;color:#cfe5e8}
 
-  footer{padding:54px 0 70px;text-align:center;font-family:'JetBrains Mono',monospace;font-size:12px;
-    letter-spacing:.5px;color:#555;line-height:2}
-  footer .big{font-family:'Archivo Black',sans-serif;font-size:clamp(40px,12vw,140px);
-    color:transparent;-webkit-text-stroke:2px var(--ink);text-transform:uppercase;line-height:.9;margin-bottom:30px;
-    opacity:.25}
+  .lockup-band{padding:60px 0;text-align:center;border-bottom:1px solid var(--line)}
+  .lockup-band img{max-width:min(620px,86%);height:auto;
+    filter:brightness(0) invert(1) drop-shadow(0 6px 30px rgba(47,122,175,.4));
+    opacity:.95}
+  .lockup-band p{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--mut);
+    letter-spacing:2px;text-transform:uppercase;margin-top:24px}
 
-  /* reveal on scroll */
-  .reveal{opacity:0;transform:translateY(40px);transition:opacity .7s cubic-bezier(.2,.7,.2,1),transform .7s cubic-bezier(.2,.7,.2,1)}
+  footer{padding:56px 0 70px;text-align:center}
+  footer .big{font-family:'Archivo Black',sans-serif;font-size:clamp(40px,12vw,150px);
+    line-height:.9;text-transform:uppercase;
+    background:linear-gradient(120deg,var(--teal),var(--blue));-webkit-background-clip:text;background-clip:text;color:transparent;opacity:.5}
+  footer .info{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--mut);letter-spacing:.5px;line-height:2;margin-top:24px}
+
+  .reveal{opacity:0;transform:translateY(36px);transition:opacity .7s cubic-bezier(.2,.7,.2,1),transform .7s cubic-bezier(.2,.7,.2,1)}
   .reveal.in{opacity:1;transform:none}
 
   @media(max-width:780px){
-    .hero-grid{grid-template-columns:1fr}
-    .logo-stage{order:-1;margin-bottom:10px}
-    .logo-ring{width:220px;height:220px}.logo-img{width:130px;height:130px}
-    .feat-grid{grid-template-columns:1fr}
-    .feat-grid .cell{border-right:none!important}
-    .feat-grid .cell:nth-last-child(2){border-bottom:2px solid var(--ink)}
-    .spec .row{grid-template-columns:1fr}
+    .hero-grid{grid-template-columns:1fr}.logo-stage{order:-1;margin-bottom:6px}
+    .logo-ring{width:210px;height:210px}.logo-img{width:128px;height:128px}
+    .feat-grid{grid-template-columns:1fr}.spec .row{grid-template-columns:1fr}
     .topbar nav{display:none}
   }
 </style>
 </head>
 <body>
 <div class="grid-bg"></div>
-<div class="noise"></div>
+<div class="glow a"></div><div class="glow b"></div>
+<div class="scanline"></div>
 
 <div class="topbar">
-  <div><span class="dot"></span>COMFYUI-LASERVAPOR / KRITA EDITION</div>
+  <div class="brand"><img src="logo.svg" alt=""/><span class="zh">农用激光除杂车</span> / LASER VAPOR</div>
   <nav>
-    <a href="#features">功能</a>
-    <a href="#install">安装</a>
-    <a href="#spec">规格</a>
-    <a href="#download">下载</a>
+    <a href="#features">功能</a><a href="#install">安装</a><a href="#spec">规格</a><a href="#download">下载</a>
   </nav>
-  <div>EST.2026 — v1.0</div>
+  <div><span class="dot"></span> KRITA · v1.0</div>
 </div>
 
 <!-- HERO -->
 <header class="hero">
   <div class="wrap">
-    <div class="meta-row">
-      <span>[ AI IMAGE GENERATION ]</span>
-      <span>LIBLIB · COMFYUI · CLOUD</span>
-      <span>FOR KRITA 5.X</span>
-    </div>
+    <div class="kick">AI 图像生成 · LIBLIB COMFYUI 云端工作流</div>
     <div class="hero-grid">
       <div>
         <h1>
-          <span class="sweep">LASER</span>
-          <span class="line2">VAPOR</span>
+          <span class="h-zh">农用激光除杂车</span>
+          <span class="h-en">Laser Vapor</span>
         </h1>
         <div class="hero-desc reveal">
-          把 <b>LibLib ComfyUI 云端工作流</b>装进 Krita。上传参考图、写提示词、
-          一键生成,结果<b>直接变成图层</b>贴回画布。无需离开你的画布。
+          把 <b>LibLib ComfyUI 云端工作流</b>装进 Krita。上传参考图、写提示词、一键生成，
+          结果<b>直接变成图层</b>贴回画布——无需离开你的创作现场。
         </div>
         <div class="tags reveal">
           <span class="tag fill">文生图</span>
@@ -235,15 +212,13 @@
         </div>
       </div>
       <div class="logo-stage">
-        <div class="logo-ring">
-          <img src="logo.svg" alt="LaserVapor" class="logo-img"/>
-        </div>
+        <div class="logo-ring"><img src="logo.svg" alt="Laser Vapor" class="logo-img"/></div>
       </div>
     </div>
   </div>
 </header>
 
-<!-- CTA BAND -->
+<!-- CTA -->
 <div class="cta-band" id="download">
   <a href="comfyui-laservapor-krita.zip" download>
     <span class="big">⬇ 下载插件</span>
@@ -252,39 +227,24 @@
   </a>
 </div>
 
-<!-- MARQUEE -->
-<div class="marquee">
-  <div>
-    <span>★ 文生图</span><span>★ 图生图</span><span>★ 提示词注入</span><span>★ 自定义尺寸</span><span>★ 结果入图层</span><span>★ 折叠式面板</span><span>★ 零依赖安装</span>
-    <span>★ 文生图</span><span>★ 图生图</span><span>★ 提示词注入</span><span>★ 自定义尺寸</span><span>★ 结果入图层</span><span>★ 折叠式面板</span><span>★ 零依赖安装</span>
-  </div>
-</div>
+<div class="marquee"><div>
+  <span>◆ 文生图</span><span>◆ 图生图</span><span>◆ 提示词注入</span><span>◆ 自定义尺寸</span><span>◆ 结果入图层</span><span>◆ 折叠面板</span><span>◆ 零依赖</span>
+  <span>◆ 文生图</span><span>◆ 图生图</span><span>◆ 提示词注入</span><span>◆ 自定义尺寸</span><span>◆ 结果入图层</span><span>◆ 折叠面板</span><span>◆ 零依赖</span>
+</div></div>
 
 <!-- FEATURES -->
 <section id="features">
   <div class="wrap">
-    <div class="sec-head reveal"><span class="sec-num">01 / 功能</span><h2>FEATURES</h2></div>
+    <div class="sec-head reveal"><span class="sec-num">01</span><h2>FEATURES</h2><span class="zh">/ 功能</span></div>
     <div class="feat-grid reveal">
-      <div class="cell">
-        <div class="idx">F.01</div>
-        <h3>文生图 / 图生图</h3>
-        <p>上传本地参考图,或直接读取当前 Krita 画布作为输入,自动上传并注入到工作流的 LoadImage 节点。</p>
-      </div>
-      <div class="cell">
-        <div class="idx">F.02</div>
-        <h3>提示词 & 尺寸</h3>
-        <p>正向提示词写入 CR Text 节点,输出宽高一键覆盖尺寸节点,节点 ID 可按你的工作流自由配置。</p>
-      </div>
-      <div class="cell">
-        <div class="idx">F.03</div>
-        <h3>结果直接入画布</h3>
-        <p>生成图自动作为新图层贴回画布,或在新文档打开。多张结果以缩略图网格呈现,逐张操作。</p>
-      </div>
-      <div class="cell">
-        <div class="idx">F.04</div>
-        <h3>原生 · 零依赖</h3>
-        <p>纯 Python + Krita 自带 PyQt5 编写,无需 pip 安装任何库。折叠式面板,界面清爽,实时进度与日志。</p>
-      </div>
+      <div class="cell"><div class="idx">F.01</div><h3>文生图 / 图生图</h3>
+        <p>上传本地参考图，或直接读取当前 Krita 画布作为输入，自动上传并注入到工作流的 LoadImage 节点。</p></div>
+      <div class="cell"><div class="idx">F.02</div><h3>提示词 & 尺寸</h3>
+        <p>正向提示词写入 CR Text 节点，输出宽高一键覆盖尺寸节点，节点 ID 可按你的工作流自由配置。</p></div>
+      <div class="cell"><div class="idx">F.03</div><h3>结果直接入画布</h3>
+        <p>生成图自动作为新图层贴回画布，或在新文档打开。多张结果以缩略图网格呈现，逐张操作。</p></div>
+      <div class="cell"><div class="idx">F.04</div><h3>原生 · 零依赖</h3>
+        <p>纯 Python + Krita 自带 PyQt5 编写，无需 pip 安装任何库。折叠式面板，实时进度与日志。</p></div>
     </div>
   </div>
 </section>
@@ -292,13 +252,13 @@
 <!-- INSTALL -->
 <section id="install">
   <div class="wrap">
-    <div class="sec-head reveal"><span class="sec-num">02 / 安装</span><h2>INSTALL</h2></div>
+    <div class="sec-head reveal"><span class="sec-num">02</span><h2>INSTALL</h2><span class="zh">/ 安装</span></div>
     <div class="steps reveal">
-      <div class="step"><div class="n">01</div><div><h4>下载 ZIP</h4><p>点上方按钮下载 <code>.zip</code>,<b>不要解压</b>。</p></div></div>
+      <div class="step"><div class="n">01</div><div><h4>下载 ZIP</h4><p>点上方按钮下载 <code>.zip</code>，<b>不要解压</b>。</p></div></div>
       <div class="step"><div class="n">02</div><div><h4>导入插件</h4><p>Krita 菜单 → <code>工具 → 脚本 → 从文件导入 Python 插件</code> → 选中 zip。</p></div></div>
-      <div class="step"><div class="n">03</div><div><h4>启用</h4><p><code>设置 → 配置 Krita → Python 插件管理器</code> → 勾选 ComfyUI-LaserVapor。</p></div></div>
+      <div class="step"><div class="n">03</div><div><h4>启用</h4><p><code>设置 → 配置 Krita → Python 插件管理器</code> → 勾选 农用激光除杂车 / Laser Vapor。</p></div></div>
       <div class="step"><div class="n">04</div><div><h4>重启 Krita</h4><p>启用插件后必须重启才能生效。</p></div></div>
-      <div class="step"><div class="n">05</div><div><h4>打开面板</h4><p><code>设置 → 工具面板(Dockers)</code> → 勾选 ComfyUI-LaserVapor,面板出现在右侧。</p></div></div>
+      <div class="step"><div class="n">05</div><div><h4>打开面板</h4><p><code>设置 → 工具面板(Dockers)</code> → 勾选插件，面板出现在右侧。</p></div></div>
     </div>
     <div class="callout reveal">
       <b>使用：</b>面板填入 LibLib AccessKey / SecretKey 与 templateUuid / workflowUuid，选择输入方式，写提示词，点「⚡ 生成」。
@@ -310,7 +270,7 @@
 <!-- SPEC -->
 <section id="spec">
   <div class="wrap">
-    <div class="sec-head reveal"><span class="sec-num">03 / 规格</span><h2>SPEC SHEET</h2></div>
+    <div class="sec-head reveal"><span class="sec-num">03</span><h2>SPEC</h2><span class="zh">/ 规格</span></div>
     <div class="spec reveal">
       <div class="row"><div class="k">平台</div><div class="v">Krita 5.x · Windows / macOS / Linux</div></div>
       <div class="row"><div class="k">运行环境</div><div class="v">Krita 内置 Python 3 + PyQt5（无需额外安装）</div></div>
@@ -323,27 +283,33 @@
   </div>
 </section>
 
+<!-- BRAND LOCKUP -->
+<div class="lockup-band reveal">
+  <div class="wrap">
+    <img src="brand-lockup.png" alt="农用激光除杂车 Laser Vapor"/>
+    <p>农用激光除杂 · 智能图像生成</p>
+  </div>
+</div>
+
 <footer>
   <div class="wrap">
-    <div class="big">LASERVAPOR</div>
-    COMFYUI-LASERVAPOR · KRITA EDITION · v1.0<br/>
-    NATIVE PYTHON PLUGIN · NO EXTERNAL DEPENDENCIES<br/>
-    © 2026 — BUILT FOR KRITA
+    <div class="big">LASER VAPOR</div>
+    <div class="info">
+      农用激光除杂车 · LASER VAPOR · KRITA EDITION · v1.0<br/>
+      NATIVE PYTHON PLUGIN · NO EXTERNAL DEPENDENCIES<br/>
+      © 2026 — BUILT FOR KRITA
+    </div>
   </div>
 </footer>
 
 <script>
-  // scroll reveal
-  const io = new IntersectionObserver((es)=>{
-    es.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target);} });
-  },{threshold:.12});
+  const io = new IntersectionObserver((es)=>{es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}})},{threshold:.12});
   document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
-
-  // subtle parallax on the logo ring
-  window.addEventListener('scroll',()=>{
-    const y=window.scrollY;
-    const ring=document.querySelector('.logo-img');
-    if(ring) ring.style.filter='drop-shadow(0 '+(8+y*0.02)+'px '+(20+y*0.03)+'px rgba(46,111,176,.4))';
+  // glow drift on scroll
+  window.addEventListener('scroll',()=>{const y=window.scrollY;
+    const a=document.querySelector('.glow.a'),b=document.querySelector('.glow.b');
+    if(a)a.style.transform='translateY('+(y*0.15)+'px)';
+    if(b)b.style.transform='translateY('+(-y*0.1)+'px)';
   },{passive:true});
 </script>
 </body>
