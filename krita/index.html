@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ComfyUI-LaserVapor · Krita 插件</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg" />
+<style>
+  :root{
+    --bg:#0e0f13; --bg2:#16181f; --card:#1b1e27; --border:#2a2e3a;
+    --text:#e8eaf0; --text2:#9aa0b0; --accent:#7c5cff; --accent2:#42a5f5;
+    --ok:#34d399;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    background:radial-gradient(1200px 600px at 50% -10%, #20143f 0%, var(--bg) 55%);
+    color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+    line-height:1.6; min-height:100vh;
+  }
+  .wrap{max-width:860px;margin:0 auto;padding:48px 20px 80px}
+  header{text-align:center;margin-bottom:40px}
+  .logo{width:96px;height:96px;border-radius:22px;box-shadow:0 10px 40px rgba(124,92,255,.35);margin-bottom:18px}
+  h1{font-size:34px;font-weight:700;letter-spacing:-.5px}
+  .badge{display:inline-block;margin-top:10px;padding:4px 12px;border:1px solid var(--border);
+    border-radius:99px;color:var(--text2);font-size:13px}
+  .sub{color:var(--text2);margin-top:14px;font-size:16px}
+
+  .cta{display:flex;flex-direction:column;align-items:center;gap:10px;margin:36px 0}
+  .btn{
+    display:inline-flex;align-items:center;gap:10px;
+    background:linear-gradient(135deg,var(--accent),var(--accent2));
+    color:#fff;text-decoration:none;font-weight:600;font-size:17px;
+    padding:15px 34px;border-radius:14px;border:none;cursor:pointer;
+    box-shadow:0 8px 30px rgba(124,92,255,.4);transition:transform .15s,box-shadow .15s;
+  }
+  .btn:hover{transform:translateY(-2px);box-shadow:0 12px 38px rgba(124,92,255,.55)}
+  .btn small{font-weight:400;opacity:.85;font-size:13px}
+
+  .card{background:var(--card);border:1px solid var(--border);border-radius:16px;
+    padding:24px 26px;margin:20px 0}
+  .card h2{font-size:20px;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+  ol,ul{padding-left:22px}
+  li{margin:8px 0;color:var(--text2)}
+  li b{color:var(--text)}
+  code{background:var(--bg2);border:1px solid var(--border);border-radius:6px;
+    padding:2px 7px;font-family:Consolas,Monaco,monospace;font-size:13px;color:#ffd479}
+  .step-num{display:inline-flex;width:22px;height:22px;border-radius:50%;
+    background:var(--accent);color:#fff;font-size:12px;align-items:center;
+    justify-content:center;font-weight:700;margin-right:4px}
+  .note{background:rgba(66,165,245,.08);border:1px solid rgba(66,165,245,.3);
+    border-radius:10px;padding:12px 16px;margin-top:14px;font-size:14px;color:#b9d4f0}
+  .feat{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-top:6px}
+  .feat div{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px}
+  .feat b{color:var(--text);display:block;margin-bottom:3px}
+  .feat span{color:var(--text2);font-size:13px}
+  footer{text-align:center;color:var(--text2);font-size:13px;margin-top:48px}
+  a{color:var(--accent2)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <img src="logo.png" alt="logo" class="logo" />
+    <h1>ComfyUI-LaserVapor</h1>
+    <div class="badge">Krita 插件 · v1.0</div>
+    <p class="sub">在 Krita 内直接调用 LibLib ComfyUI 云端工作流生成图像</p>
+  </header>
+
+  <div class="cta">
+    <a class="btn" href="comfyui-laservapor-krita.zip" download>
+      ⬇ 下载插件
+      <small>comfyui-laservapor-krita.zip</small>
+    </a>
+    <span style="color:var(--text2);font-size:13px">适用于 Krita 5.x（Windows / macOS / Linux）</span>
+  </div>
+
+  <div class="card">
+    <h2>✨ 功能</h2>
+    <div class="feat">
+      <div><b>文生图 / 图生图</b><span>支持上传本地参考图或使用当前画布</span></div>
+      <div><b>提示词 & 尺寸</b><span>正向提示词、输出宽高一键覆盖工作流节点</span></div>
+      <div><b>结果直接入画布</b><span>生成图自动作为新图层，或在新文档打开</span></div>
+      <div><b>折叠式面板</b><span>配置、输入、结果分区收起，界面清爽</span></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>📦 安装步骤</h2>
+    <ol>
+      <li><span class="step-num">1</span>下载上方 <code>.zip</code>（<b>不要解压</b>）</li>
+      <li><span class="step-num">2</span>打开 Krita → 菜单 <b>工具 → 脚本 → 从文件导入 Python 插件</b>，选中刚下载的 zip</li>
+      <li><span class="step-num">3</span><b>设置 → 配置 Krita → Python 插件管理器</b>，勾选 <b>ComfyUI-LaserVapor</b></li>
+      <li><span class="step-num">4</span><b>重启 Krita</b></li>
+      <li><span class="step-num">5</span><b>设置 → 工具面板(Dockers)</b> → 勾选 <b>ComfyUI-LaserVapor</b>，面板出现在右侧</li>
+    </ol>
+    <div class="note">
+      手动安装：把 zip 内的 <code>comfyui_laservapor</code> 文件夹和 <code>comfyui_laservapor.desktop</code>
+      放到 <code>%APPDATA%\krita\pykrita\</code>（Windows），再从第 3 步开始。
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>🚀 使用</h2>
+    <ul>
+      <li>面板①填入你的 LibLib <b>AccessKey / SecretKey</b> 和 <b>templateUuid / workflowUuid</b></li>
+      <li>②选择图片输入方式：文生图 / 上传本地图 / 用当前画布</li>
+      <li>③填提示词、输出尺寸（节点 ID 按你的工作流填）</li>
+      <li>点 <b>⚡ 生成</b>，进度实时显示，完成后结果出现在「结果」区，可一键导入画布</li>
+    </ul>
+    <div class="note">
+      国内若图片上传失败（图床被墙），在面板「④高级 → 代理」填 <code>http://127.0.0.1:7897</code>。
+      LibLib API 本身国内可直连。
+    </div>
+  </div>
+
+  <footer>
+    ComfyUI-LaserVapor · 由 Photoshop UXP 插件移植为原生 Krita 插件<br/>
+    仅依赖 Krita 自带 Python + PyQt5，无需额外安装任何库
+  </footer>
+</div>
+</body>
+</html>
