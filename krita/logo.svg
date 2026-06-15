@@ -1,0 +1,24 @@
+<svg width="320" height="320" viewBox="0 0 320 320" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="lv" x1="40" y1="40" x2="280" y2="280" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#3FB6A8"/>
+      <stop offset="0.5" stop-color="#3A8FC4"/>
+      <stop offset="1" stop-color="#2E6FB0"/>
+    </linearGradient>
+  </defs>
+  <!-- four-blade pinwheel: one blade rotated 0/90/180/270 -->
+  <g fill="url(#lv)">
+    <g>
+      <path d="M160 160 C 150 96, 168 48, 250 56 C 196 70, 178 116, 160 160 Z"/>
+    </g>
+    <g transform="rotate(90 160 160)">
+      <path d="M160 160 C 150 96, 168 48, 250 56 C 196 70, 178 116, 160 160 Z"/>
+    </g>
+    <g transform="rotate(180 160 160)">
+      <path d="M160 160 C 150 96, 168 48, 250 56 C 196 70, 178 116, 160 160 Z"/>
+    </g>
+    <g transform="rotate(270 160 160)">
+      <path d="M160 160 C 150 96, 168 48, 250 56 C 196 70, 178 116, 160 160 Z"/>
+    </g>
+  </g>
+</svg>
