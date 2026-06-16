@@ -233,18 +233,17 @@
   .pl-logo.flight{transition:transform .92s cubic-bezier(.65,0,.2,1),
     filter .92s ease;will-change:transform}
 
-  /* page sits hidden until the curtain releases it */
+  /* page sits hidden until the curtain releases it.
+     只在 loading 时压暗这些层; 解除后它们各自回到设计透明度(scanline .04 / glow .5/.4) */
   body.loading{overflow:hidden}
   body.loading .grid-bg,body.loading .glow,body.loading .topbar,
   body.loading .hero,body.loading .scanline{opacity:0}
-  body .hero,body .topbar{transition:opacity .7s ease .15s}
-  .hero-reveal .topbar,.hero-reveal .grid-bg,.hero-reveal .glow,
-  .hero-reveal .scanline{opacity:1!important;transition:opacity .8s ease}
-  .hero-reveal .hero{opacity:1!important}
+  /* reveal: 平滑过渡回各自默认 opacity, 不强设为 1 */
+  .grid-bg,.glow,.topbar,.hero,.scanline{transition:opacity .8s ease}
   @media(prefers-reduced-motion:reduce){
     .preloader{display:none}body.loading{overflow:auto}
-    body.loading .hero,body.loading .topbar,body.loading .grid-bg,
-    body.loading .glow,body.loading .scanline{opacity:1}}
+    body.loading .grid-bg,body.loading .glow,body.loading .topbar,
+    body.loading .hero,body.loading .scanline{opacity:unset}}
 
   .reveal{opacity:0;transform:translateY(36px);transition:opacity .7s cubic-bezier(.2,.7,.2,1),transform .7s cubic-bezier(.2,.7,.2,1)}
   .reveal.in{opacity:1;transform:none}
@@ -424,28 +423,41 @@
       document.body.classList.remove('loading');
     }
 
-    // FLIP: 把幕布 logo 精确飞到 hero logo 的最终位置/尺寸, 实现无缝接管
+    // FLIP: 把幕布 logo 精确飞到 hero logo 的最终位置/尺寸, 落地角度对齐, 无缝接管
     function flyToHero(){
       if(!heroLogo){ pre.classList.add('done'); reveal(); setTimeout(()=>pre.remove(),900); return; }
+
+      // 先让页面浮现, 但 hero 那个常驻 logo 暂时隐身 —— 由飞入的幕布 logo 顶替它,
+      // 飞行结束的瞬间再原地交接, 避免"两个 logo"或落点跳变。
+      heroLogo.style.visibility = 'hidden';
+      reveal();
+      void document.body.offsetWidth;          // 让 hero 布局生效, 量到准确落点
+
       const from = plLogo.getBoundingClientRect();
       const to   = heroLogo.getBoundingClientRect();
       const dx = (to.left+to.width/2) - (from.left+from.width/2);
       const dy = (to.top+to.height/2) - (from.top+from.height/2);
       const scale = to.width / from.width;
 
-      pre.classList.add('flying');           // 收起光环/文字, 冻结自转
-      // 强制一次 reflow 让 flying 的样式生效, 再起飞
+      pre.classList.add('flying');             // 收起光环/文字, 冻结入场自转
       void plLogo.offsetWidth;
       plLogo.classList.add('flight');
+      // 落地角度 = 360°(视觉 0°), 与 hero logo spin 起点对齐, 接管不跳角
       plLogo.style.transform =
-        `translate(${dx}px,${dy}px) scale(${scale}) rotate(380deg)`;
+        `translate(${dx}px,${dy}px) scale(${scale}) rotate(360deg)`;
       plLogo.style.filter = 'drop-shadow(0 8px 26px rgba(47,122,175,.5))';
 
-      reveal();                              // 页面同时浮现, 落点已有常驻 logo 在转
-
-      // logo 抵达后, 幕布圆形溶解收掉
-      setTimeout(()=>{ pre.classList.add('done'); }, 640);
-      setTimeout(finish, 1500);
+      // 飞行结束(.92s)那一刻原地交接: hero logo 从 0° 重启 spin 接上, 幕布 logo 撤场
+      const HANDOFF = 920;
+      setTimeout(()=>{
+        heroLogo.style.animation = 'none';
+        void heroLogo.offsetWidth;
+        heroLogo.style.animation = 'spin 16s linear infinite';
+        heroLogo.style.visibility = 'visible';   // 与飞入 logo 同位同角, 视觉零缝
+        plLogo.style.visibility = 'hidden';
+        pre.classList.add('done');               // 幕布溶解
+      }, HANDOFF);
+      setTimeout(finish, HANDOFF + 700);
     }
 
     // 时间线: 入场(1.05s)+蓄力旋转 → ~2.0s 起飞。
