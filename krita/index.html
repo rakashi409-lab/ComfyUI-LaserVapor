@@ -164,6 +164,88 @@
     background:linear-gradient(120deg,var(--teal),var(--blue));-webkit-background-clip:text;background-clip:text;color:transparent;opacity:.5}
   footer .info{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--mut);letter-spacing:.5px;line-height:2;margin-top:24px}
 
+  /* ============ 开屏加载动画 PRELOADER ============ */
+  .preloader{position:fixed;inset:0;z-index:9999;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;gap:38px;
+    background:radial-gradient(120% 120% at 50% 40%,#0b2030 0%,#06121b 60%,#03090e 100%);
+    overflow:hidden;will-change:opacity,clip-path}
+  /* faint grid + drifting glow inside the curtain, echoes the page bg */
+  .preloader::before{content:"";position:absolute;inset:0;opacity:.5;
+    background-image:linear-gradient(var(--grid) 1px,transparent 1px),
+      linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+    background-size:54px 54px;
+    mask-image:radial-gradient(60% 60% at 50% 45%,#000 30%,transparent 100%)}
+  .preloader::after{content:"";position:absolute;width:680px;height:680px;border-radius:50%;
+    background:radial-gradient(circle,rgba(63,189,176,.22),transparent 62%);
+    filter:blur(40px);animation:pl-breathe 3.2s ease-in-out infinite}
+  @keyframes pl-breathe{50%{transform:scale(1.18);opacity:.6}}
+
+  .pl-stage{position:relative;width:260px;height:260px;display:flex;
+    align-items:center;justify-content:center;will-change:transform}
+  /* sweeping conic loader ring drawn around the logo */
+  .pl-ring{position:absolute;inset:0;border-radius:50%;
+    background:conic-gradient(from 0deg,transparent 0deg,transparent 200deg,
+      var(--teal-lt) 300deg,var(--teal) 350deg,transparent 360deg);
+    -webkit-mask:radial-gradient(circle,transparent 122px,#000 123px,#000 130px,transparent 131px);
+    mask:radial-gradient(circle,transparent 122px,#000 123px,#000 130px,transparent 131px);
+    animation:pl-sweep 1.15s cubic-bezier(.5,.05,.2,1) infinite;opacity:0;
+    animation-delay:.55s;animation-fill-mode:forwards}
+  @keyframes pl-sweep{0%{opacity:0;transform:rotate(0)}15%{opacity:1}
+    85%{opacity:1}100%{opacity:.85;transform:rotate(360deg)}}
+  /* a second, thin dashed orbit that counter-rotates for depth */
+  .pl-orbit{position:absolute;inset:-18px;border-radius:50%;
+    border:1px dashed rgba(63,189,176,.35);opacity:0;
+    animation:pl-orbit-in .8s ease .35s forwards, spin 18s linear infinite reverse}
+  @keyframes pl-orbit-in{from{opacity:0;transform:scale(.7)}to{opacity:1;transform:scale(1)}}
+
+  .pl-logo{width:150px;height:150px;
+    filter:drop-shadow(0 10px 34px rgba(47,122,175,.6));
+    /* entrance: unscrew into view, then settle into a steady spin */
+    animation:pl-enter 1.05s cubic-bezier(.22,1,.36,1) forwards,
+              pl-spin 9s linear .95s infinite;
+    will-change:transform,filter}
+  @keyframes pl-enter{
+    0%{opacity:0;transform:scale(.2) rotate(-150deg);filter:blur(14px) drop-shadow(0 0 0 rgba(47,122,175,0))}
+    55%{opacity:1;filter:blur(0) drop-shadow(0 10px 34px rgba(47,122,175,.6))}
+    70%{transform:scale(1.12) rotate(24deg)}   /* tiny overshoot — gives it life */
+    100%{transform:scale(1) rotate(0deg)}}
+  @keyframes pl-spin{to{transform:rotate(360deg)}}
+
+  .pl-word{font-family:'Archivo Black',sans-serif;font-size:clamp(22px,4vw,34px);
+    letter-spacing:.34em;text-transform:uppercase;
+    display:flex;justify-content:center;padding-left:.34em}
+  .pl-word span{opacity:0;transform:translateY(16px);display:inline-block;
+    color:#bfeef0;text-shadow:0 0 18px rgba(63,189,176,.65),0 0 4px rgba(63,189,176,.9);
+    animation:pl-letter .55s cubic-bezier(.2,.8,.25,1) forwards}
+  @keyframes pl-letter{to{opacity:1;transform:none}}
+  .pl-sub{position:absolute;bottom:46px;font-family:'JetBrains Mono',monospace;
+    font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--mut);
+    opacity:0;animation:pl-fade .6s ease 1.5s forwards}
+  @keyframes pl-fade{to{opacity:.8}}
+
+  /* exit: curtain dissolves while the FLIP-translated logo flies to the hero slot */
+  .preloader.done{animation:pl-curtain .85s cubic-bezier(.7,0,.3,1) forwards}
+  @keyframes pl-curtain{
+    to{opacity:0;clip-path:circle(0% at 50% 50%);visibility:hidden}}
+  .preloader.flying .pl-ring,.preloader.flying .pl-orbit,
+  .preloader.flying .pl-word,.preloader.flying .pl-sub{opacity:0;transition:opacity .35s ease}
+  .preloader.flying .pl-logo{animation:none}     /* freeze spin; JS drives the flight */
+  .pl-logo.flight{transition:transform .92s cubic-bezier(.65,0,.2,1),
+    filter .92s ease;will-change:transform}
+
+  /* page sits hidden until the curtain releases it */
+  body.loading{overflow:hidden}
+  body.loading .grid-bg,body.loading .glow,body.loading .topbar,
+  body.loading .hero,body.loading .scanline{opacity:0}
+  body .hero,body .topbar{transition:opacity .7s ease .15s}
+  .hero-reveal .topbar,.hero-reveal .grid-bg,.hero-reveal .glow,
+  .hero-reveal .scanline{opacity:1!important;transition:opacity .8s ease}
+  .hero-reveal .hero{opacity:1!important}
+  @media(prefers-reduced-motion:reduce){
+    .preloader{display:none}body.loading{overflow:auto}
+    body.loading .hero,body.loading .topbar,body.loading .grid-bg,
+    body.loading .glow,body.loading .scanline{opacity:1}}
+
   .reveal{opacity:0;transform:translateY(36px);transition:opacity .7s cubic-bezier(.2,.7,.2,1),transform .7s cubic-bezier(.2,.7,.2,1)}
   .reveal.in{opacity:1;transform:none}
 
@@ -175,7 +257,19 @@
   }
 </style>
 </head>
-<body>
+<body class="loading">
+
+<!-- ============ 开屏加载动画 ============ -->
+<div class="preloader" id="preloader">
+  <div class="pl-stage" id="plStage">
+    <div class="pl-orbit"></div>
+    <div class="pl-ring"></div>
+    <img src="logo.png" alt="Laser Vapor" class="pl-logo" id="plLogo"/>
+  </div>
+  <div class="pl-word" id="plWord" aria-label="Laser Vapor"></div>
+  <div class="pl-sub">农用激光除杂 · 智能图像生成</div>
+</div>
+
 <div class="grid-bg"></div>
 <div class="glow a"></div><div class="glow b"></div>
 <div class="scanline"></div>
@@ -303,6 +397,66 @@
 </footer>
 
 <script>
+  /* ============ 开屏加载动画 编排 ============ */
+  (function(){
+    const pre = document.getElementById('preloader');
+    if(!pre) return;
+    const reduce = matchMedia('(prefers-reduced-motion:reduce)').matches;
+
+    // 逐字注入品牌字, 错峰淡入
+    const word = document.getElementById('plWord');
+    const text = 'LASER VAPOR';
+    [...text].forEach((ch,i)=>{
+      const s=document.createElement('span');
+      if(ch===' '){ s.style.width='.5em'; } else { s.textContent=ch; }
+      s.style.animationDelay = (0.75 + i*0.05) + 's';
+      word.appendChild(s);
+    });
+
+    function finish(){ document.body.classList.remove('loading'); pre&&pre.remove(); }
+    if(reduce){ finish(); return; }
+
+    const plLogo = document.getElementById('plLogo');
+    const heroLogo = document.querySelector('.hero .logo-img');
+
+    function reveal(){
+      document.body.classList.add('hero-reveal');
+      document.body.classList.remove('loading');
+    }
+
+    // FLIP: 把幕布 logo 精确飞到 hero logo 的最终位置/尺寸, 实现无缝接管
+    function flyToHero(){
+      if(!heroLogo){ pre.classList.add('done'); reveal(); setTimeout(()=>pre.remove(),900); return; }
+      const from = plLogo.getBoundingClientRect();
+      const to   = heroLogo.getBoundingClientRect();
+      const dx = (to.left+to.width/2) - (from.left+from.width/2);
+      const dy = (to.top+to.height/2) - (from.top+from.height/2);
+      const scale = to.width / from.width;
+
+      pre.classList.add('flying');           // 收起光环/文字, 冻结自转
+      // 强制一次 reflow 让 flying 的样式生效, 再起飞
+      void plLogo.offsetWidth;
+      plLogo.classList.add('flight');
+      plLogo.style.transform =
+        `translate(${dx}px,${dy}px) scale(${scale}) rotate(380deg)`;
+      plLogo.style.filter = 'drop-shadow(0 8px 26px rgba(47,122,175,.5))';
+
+      reveal();                              // 页面同时浮现, 落点已有常驻 logo 在转
+
+      // logo 抵达后, 幕布圆形溶解收掉
+      setTimeout(()=>{ pre.classList.add('done'); }, 640);
+      setTimeout(finish, 1500);
+    }
+
+    // 时间线: 入场(1.05s)+蓄力旋转 → ~2.0s 起飞。
+    // 只依赖墙钟 setTimeout, 不等 load(图片是单张本地 PNG, 已在 DOM 里预解码)。
+    let flown = false;
+    const go = ()=>{ if(flown) return; flown = true; flyToHero(); };
+    setTimeout(go, 2000);
+    // 兜底: 任何情况下最多 3.5s 强制收场
+    setTimeout(go, 3500);
+  })();
+
   const io = new IntersectionObserver((es)=>{es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}})},{threshold:.12});
   document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
   // glow drift on scroll
