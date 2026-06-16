@@ -284,7 +284,7 @@
 <div class="topbar">
   <div class="brand"><img src="logo.png" alt=""/><span class="zh">农用激光除杂车</span> / LASER VAPOR</div>
   <nav>
-    <a href="#features">功能</a><a href="#install">安装</a><a href="#spec">规格</a><a href="#download">下载</a>
+    <a href="#features">功能</a><a href="#install">安装</a><a href="#config">配置</a><a href="#spec">规格</a><a href="#download">下载</a>
   </nav>
   <div><span class="dot"></span> KRITA · v1.0</div>
 </div>
@@ -324,7 +324,7 @@
   <a href="comfyui-laservapor-krita.zip" download>
     <span class="big">⬇ 下载插件</span>
     <span class="arrow">→</span>
-    <span class="sz">comfyui-laservapor-krita.zip<br/>~12 KB · KRITA 5.X<br/>WIN / MAC / LINUX</span>
+    <span class="sz">comfyui-laservapor-krita.zip<br/>~140 KB · KRITA 5.X<br/>WIN / MAC / LINUX</span>
   </a>
 </div>
 
@@ -362,8 +362,37 @@
       <div class="step"><div class="n">05</div><div><h4>打开面板</h4><p><code>设置 → 工具面板(Dockers)</code> → 勾选插件，面板出现在右侧。</p></div></div>
     </div>
     <div class="callout reveal">
-      <b>使用：</b>面板填入 LibLib AccessKey / SecretKey 与 templateUuid / workflowUuid，选择输入方式，写提示词，点「⚡ 生成」。
-      国内若图床上传失败，在「高级 → 代理」填 <code>http://127.0.0.1:7897</code>。
+      <b>首次使用需配置自己的 LibLib 账号与工作流（见下方 03 配置）。</b>
+      国内若图床上传失败，在「④ 配置 → 代理」填 <code>http://127.0.0.1:7897</code>。
+    </div>
+  </div>
+</section>
+
+<!-- CONFIG -->
+<section id="config">
+  <div class="wrap">
+    <div class="sec-head reveal"><span class="sec-num">03</span><h2>CONFIG</h2><span class="zh">/ 配置（首次必看）</span></div>
+    <div class="callout reveal" style="margin-top:0">
+      插件是通用工具，<b>需接入你自己的 LibLib 账号和工作流</b>。以下信息在面板的
+      <code>④ 配置（密钥 / 节点 / URL）</code> 折叠区里填写，填一次会自动记住。
+    </div>
+    <div class="steps reveal">
+      <div class="step"><div class="n">01</div><div><h4>获取密钥</h4>
+        <p>登录 <a href="https://www.liblib.art" target="_blank" style="color:var(--teal-lt)">LibLib 开放平台</a>，领取 / 购买 API 积分后生成
+        <code>AccessKey</code> 与 <code>SecretKey</code>，填入配置区。</p></div></div>
+      <div class="step"><div class="n">02</div><div><h4>填工作流</h4>
+        <p>把你在 LibLib 发布的 ComfyUI 工作流的 <code>templateUuid</code> 与 <code>workflowUuid</code> 填入。
+        工作流详情页若显示「以 API 提供服务」即可调用。</p></div></div>
+      <div class="step"><div class="n">03</div><div><h4>对应节点 ID</h4>
+        <p>按你工作流里的节点编号填：<code>图片节点</code>（LoadImage）、<code>提示词节点</code>（CR Text）、
+        <code>尺寸节点</code>（EmptyLatentImage）。默认值对应示例工作流，多数情况需改成你自己的。</p></div></div>
+      <div class="step"><div class="n">04</div><div><h4>开始生成</h4>
+        <p>回到主区：选输入方式 / 写提示词 / 调尺寸（可点预设），点「⚡ 云端生成」。
+        结果自动等比铺入当前画布。</p></div></div>
+    </div>
+    <div class="callout reveal">
+      <b>提示：</b>消耗的是<b>你自己账号的 LibLib 积分</b>。生成尺寸越大越慢，需要更快可把输出尺寸调小（如 1024）。
+      另有「✦ AI 生成」标签页用于本地素材的快速出图演示。
     </div>
   </div>
 </section>
@@ -371,14 +400,14 @@
 <!-- SPEC -->
 <section id="spec">
   <div class="wrap">
-    <div class="sec-head reveal"><span class="sec-num">03</span><h2>SPEC</h2><span class="zh">/ 规格</span></div>
+    <div class="sec-head reveal"><span class="sec-num">04</span><h2>SPEC</h2><span class="zh">/ 规格</span></div>
     <div class="spec reveal">
       <div class="row"><div class="k">平台</div><div class="v">Krita 5.x · Windows / macOS / Linux</div></div>
       <div class="row"><div class="k">运行环境</div><div class="v">Krita 内置 Python 3 + PyQt5（无需额外安装）</div></div>
       <div class="row"><div class="k">云端 API</div><div class="v">LibLib ComfyUI · HMAC-SHA1 签名鉴权</div></div>
       <div class="row"><div class="k">输入</div><div class="v">本地图片 / 当前画布 / 纯文本提示词</div></div>
       <div class="row"><div class="k">输出</div><div class="v">新图层 · 新文档 · 缩略图网格</div></div>
-      <div class="row"><div class="k">体积</div><div class="v">~12 KB</div></div>
+      <div class="row"><div class="k">体积</div><div class="v">~140 KB</div></div>
       <div class="row"><div class="k">来源</div><div class="v">由 Photoshop UXP 插件移植为原生 Krita 插件</div></div>
     </div>
   </div>
