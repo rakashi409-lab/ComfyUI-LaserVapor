@@ -228,10 +228,10 @@
     opacity:0;animation:pl-fade .6s ease 1.5s forwards}
   @keyframes pl-fade{to{opacity:.8}}
 
-  /* exit: curtain dissolves while the FLIP-translated logo flies to the hero slot */
-  .preloader.done{animation:pl-curtain .85s cubic-bezier(.7,0,.3,1) forwards}
+  /* exit: 幕布快速整体淡出, 把舞台让给 hero logo 的收束动画(不再用圆形收缩遮挡落点) */
+  .preloader.done{animation:pl-curtain .5s ease forwards;pointer-events:none}
   @keyframes pl-curtain{
-    to{opacity:0;clip-path:circle(0% at 50% 50%);visibility:hidden}}
+    to{opacity:0;visibility:hidden}}
   .preloader.flying .pl-ring,.preloader.flying .pl-orbit,
   .preloader.flying .pl-word,.preloader.flying .pl-sub{opacity:0;transition:opacity .35s ease}
   .preloader.flying .pl-logo{animation:none}     /* freeze spin; JS drives the flight */
@@ -452,20 +452,26 @@
         `translate(${dx}px,${dy}px) scale(${scale*1.18}) rotate(360deg)`;
       plLogo.style.filter = 'drop-shadow(0 8px 26px rgba(47,122,175,.5))';
 
-      // 飞行结束(.92s)那一刻原地交接: hero logo 从 1.18x/0° 缩定收束, 再无缝转入常驻 spin
+      // 飞行结束(.92s)那一刻原地交接。关键: 幕布(z-index 9999)在 hero logo 之上,
+      // 必须先让幕布快速让位, 收束才看得见 —— 否则被还没溶完的幕布挡住。
       const HANDOFF = 920;
+      const SETTLE = 1100;                       // 收束时长, 放慢看得清
       setTimeout(()=>{
-        heroLogo.style.animation = 'logo-settle .9s cubic-bezier(.18,.9,.24,1.05) forwards';
-        heroLogo.style.visibility = 'visible';   // 与飞入 logo 同位, 略大态显形
+        // 1) 幕布立刻开始溶解(快), 露出底下的 hero 落点
+        pre.classList.add('done');
+        // 2) hero logo 在干净页面上显形并收束: 1.18x→1x 缩定 + 转一圈, 带回弹
+        heroLogo.style.animation =
+          `logo-settle ${SETTLE}ms cubic-bezier(.16,.84,.28,1.06) forwards`;
+        heroLogo.style.visibility = 'visible';
         plLogo.style.visibility = 'hidden';
-        pre.classList.add('done');               // 幕布溶解
-        // 收束动画结束后, 从 70° 无缝接入匀速自转
+        // 3) 收束结束后无缝接入常驻匀速自转(终点视觉 0° 对齐 spin 起点)
         heroLogo.addEventListener('animationend', function onSettle(){
           heroLogo.removeEventListener('animationend', onSettle);
           heroLogo.style.animation = 'spin 16s linear infinite';
         });
       }, HANDOFF);
-      setTimeout(finish, HANDOFF + 700);
+      // 幕布 done 动画 .85s, 收束 1.1s —— 等收束跑完再彻底收场
+      setTimeout(finish, HANDOFF + SETTLE + 200);
     }
 
     // 时间线: 入场(1.05s)+蓄力旋转 → ~2.0s 起飞。
