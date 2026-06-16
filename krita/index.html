@@ -90,6 +90,11 @@
   .logo-img{width:180px;height:180px;animation:spin 16s linear infinite;
     filter:drop-shadow(0 8px 26px rgba(47,122,175,.5))}
   @keyframes spin{to{transform:rotate(360deg)}}
+  /* 交接收束: 从略大旋转缩定到正常尺寸, 衔接开屏飞入。
+     终点 360°(视觉 0°) 与 spin 起点对齐, 收束后接匀速自转不跳角 */
+  @keyframes logo-settle{
+    0%{transform:scale(1.18) rotate(0deg)}
+    100%{transform:scale(1) rotate(360deg)}}
 
   /* CTA band */
   .cta-band{border-top:1px solid var(--line);border-bottom:1px solid var(--line);
@@ -442,20 +447,23 @@
       pre.classList.add('flying');             // 收起光环/文字, 冻结入场自转
       void plLogo.offsetWidth;
       plLogo.classList.add('flight');
-      // 落地角度 = 360°(视觉 0°), 与 hero logo spin 起点对齐, 接管不跳角
+      // 落地: 比 hero 最终尺寸略大(1.18x)+ 角度对齐 360°, 交给 hero logo 接着缩定
       plLogo.style.transform =
-        `translate(${dx}px,${dy}px) scale(${scale}) rotate(360deg)`;
+        `translate(${dx}px,${dy}px) scale(${scale*1.18}) rotate(360deg)`;
       plLogo.style.filter = 'drop-shadow(0 8px 26px rgba(47,122,175,.5))';
 
-      // 飞行结束(.92s)那一刻原地交接: hero logo 从 0° 重启 spin 接上, 幕布 logo 撤场
+      // 飞行结束(.92s)那一刻原地交接: hero logo 从 1.18x/0° 缩定收束, 再无缝转入常驻 spin
       const HANDOFF = 920;
       setTimeout(()=>{
-        heroLogo.style.animation = 'none';
-        void heroLogo.offsetWidth;
-        heroLogo.style.animation = 'spin 16s linear infinite';
-        heroLogo.style.visibility = 'visible';   // 与飞入 logo 同位同角, 视觉零缝
+        heroLogo.style.animation = 'logo-settle .9s cubic-bezier(.18,.9,.24,1.05) forwards';
+        heroLogo.style.visibility = 'visible';   // 与飞入 logo 同位, 略大态显形
         plLogo.style.visibility = 'hidden';
         pre.classList.add('done');               // 幕布溶解
+        // 收束动画结束后, 从 70° 无缝接入匀速自转
+        heroLogo.addEventListener('animationend', function onSettle(){
+          heroLogo.removeEventListener('animationend', onSettle);
+          heroLogo.style.animation = 'spin 16s linear infinite';
+        });
       }, HANDOFF);
       setTimeout(finish, HANDOFF + 700);
     }
