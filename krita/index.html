@@ -401,6 +401,11 @@
 </footer>
 
 <script>
+  /* 每次刷新都从顶部开始: 关掉浏览器的滚动位置记忆并强制置顶 */
+  if('scrollRestoration' in history){ history.scrollRestoration = 'manual'; }
+  window.scrollTo(0,0);
+  window.addEventListener('load',()=>window.scrollTo(0,0));
+
   /* ============ 开屏加载动画 编排 ============ */
   (function(){
     const pre = document.getElementById('preloader');
