@@ -232,8 +232,11 @@
   .preloader.done{animation:pl-curtain .5s ease forwards;pointer-events:none}
   @keyframes pl-curtain{
     to{opacity:0;visibility:hidden}}
+  /* 起飞瞬间: 中心的圆环/虚线轨道/辉光立刻收掉(.18s), 只让 logo 干净飞走 —
+     否则它们会原地残留, 出现"光圈不跟着走"的怪象。文字略慢淡出无妨。 */
   .preloader.flying .pl-ring,.preloader.flying .pl-orbit,
-  .preloader.flying .pl-word,.preloader.flying .pl-sub{opacity:0;transition:opacity .35s ease}
+  .preloader.flying::after{opacity:0;animation:none;transition:opacity .18s ease}
+  .preloader.flying .pl-word,.preloader.flying .pl-sub{opacity:0;transition:opacity .3s ease}
   .preloader.flying .pl-logo{animation:none}     /* freeze spin; JS drives the flight */
   .pl-logo.flight{transition:transform .92s cubic-bezier(.65,0,.2,1),
     filter .92s ease;will-change:transform}
